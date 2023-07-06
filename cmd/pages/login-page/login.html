@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<!--
+Project: I-wish-you-app
+Created Date: Thursday, July 6th 2023, 7:31:32 pm
+Author: Olimpiev Y. Y.
+-----
+Last Modified:  yr.olimpiev@gmail.com
+Modified By: Olimpiev Y. Y.
+-----
+Copyright (c) 2023 NSU
+
+-----
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Страница входа</title>
+  <style>
+    body {
+      background-color: #222;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    
+    h2 {
+      color: #fff;
+    }
+    
+    form {
+      display: inline-block;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    label {
+      color: #fff;
+      display: block;
+      margin-bottom: 10px;
+    }
+    
+    input[type="text"],
+    input[type="password"] {
+      width: 250px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+    
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Вход в приложение</h2>
+  <form action="/login" method="POST">
+    <label for="username">Логин:</label>
+    <input type="text" id="username" name="username" required><br>
+
+    <label for="password">Пароль:</label>
+    <input type="password" id="password" name="password" required><br>
+
+    <input type="submit" value="Войти">
+  </form>
+</body>
+</html>
