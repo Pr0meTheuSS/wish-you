@@ -23,9 +23,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: separate abstractions
-// TODO: add graceful shutdown
-// TODO: logging
+// TODO: Выделить абстракции и перенести их на подходящий уровень проекта
+// TODO: Добавить изящное завершение приложения по сигналам прерывания
+// TODO: Добавить логирование проекта
 
 type Configurations struct {
 	port        int
@@ -92,7 +92,7 @@ func (a App) run() error {
 		}
 		username := ctx.PostForm("username")
 		password := ctx.PostForm("password")
-		// TODO: delete on release
+		// TODO: Убрать на релизе этот вывод
 		fmt.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
 
 		ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
@@ -102,7 +102,7 @@ func (a App) run() error {
 }
 
 func loadConfigurations(configurations *Configurations) error {
-	// TODO: implement - read from configs files
+	// TODO: Реализовать чтение конфигураций из внешнего файла
 	*configurations = Configurations{
 		port:        6969,
 		serviceName: "wish-you",
@@ -114,12 +114,12 @@ func loadConfigurations(configurations *Configurations) error {
 func main() {
 	appConfigurations := Configurations{}
 	if loadConfigurations(&appConfigurations) != nil {
-		// TODO: handle errors
+		// TODO: Обработать ошибки
 	}
 
 	wishYouApp := App{appConfigurations}
 	if err := wishYouApp.run(); err != nil {
-		// TODO: handle errors
+		// TODO: Обработать ошибки
 		fmt.Print(err)
 	}
 }
