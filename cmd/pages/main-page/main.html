@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+Project: I-wish-you-app
+Created Date: Friday, July 7th 2023, 11:02:47 am
+Author: Olimpiev Y. Y.
+-----
+Last Modified:  yr.olimpiev@gmail.com
+Modified By: Olimpiev Y. Y.
+-----
+Copyright (c) 2023 NSU
+
+-----
+-->
+
+<html>
+<head>
+  <title>Лента новостей</title>
+  <style>
+    body {
+      background-color: #222;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    h2 {
+      color: #fff;
+    }
+    
+    .tweet-feed {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    .tweet-form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+    
+    .tweet-form textarea {
+      resize: none;
+      height: 80px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+    
+    .tweet-form input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 16px;
+
+    }
+    
+    .tweet-form input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+    
+    .tweet-form input[type="submit"]:active {
+      transform: translateY(2px);
+    }
+    
+    .tweet {
+      background-color: #444;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    
+    .tweet p {
+      margin: 0;
+      font-size: 14px;
+      color: #fff;
+    }    
+    
+    .message-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      animation: fadeOut 2s ease forwards;
+    }
+    
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+
+    </style>
+</head>
+<body>
+  <h2>Лента новостей</h2>
+
+  <div class="tweet-feed">
+    <div class="tweet-form">
+      <textarea id="message" placeholder="Оставьте доброе пожелание, поделитесь своей мудростью или просто расскажите ободряющий анекдот ;)" maxlength="512"></textarea>
+      <input type="submit" value="Отправить" onclick="sendMessage()">
+    </div>
+
+    <div class="tweet">
+      <p>Пример твита 1</p>
+    </div>
+    <div class="tweet">
+      <p>Пример твита 2</p>
+    </div>
+    <div class="tweet">
+      <p>Пример твита 3</p>
+    </div>
+    <div class="message-container" id="messageContainer">
+        <p class="message-container-paragraph" id="messageContainerParagraph"></p>
+      </div>
+    
+  </div>
+
+  <script>
+
+    function showMessage(textContent) {
+    var messageContainer = document.getElementById('messageContainer');
+    var paragraphElement = document.getElementById('messageContainerParagraph');
+    paragraphElement.textContent = textContent; // Исправленное присвоение значения
+    console.log(paragraphElement.textContent);
+    messageContainer.style.display = "block";
+    setTimeout(function() {
+        messageContainer.style.display = "none";
+    }, 3000);
+    }
+
+    function sendMessage() {
+      // Получение значения текста сообщения
+      var message = document.getElementById('message').value;
+      
+      // TODO: реализовать работу с сессиями и jwt токенами
+      // Получение JWT-токена пользователя
+      // Здесь вы можете добавить код для получения JWT-токена
+      
+      // Отправка POST-запроса
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/send-message', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      // Замените 'your-jwt-token' на реальный JWT-токен пользователя
+      xhr.setRequestHeader('Authorization', 'Bearer your-jwt-token');
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.status === 200) {
+          // Обработка успешного ответа от сервера
+          console.log('Сообщение отправлено');
+          showMessage("Ваша добрюнька отправлена");
+        } else {
+          // Обработка ошибки
+          console.log('Ошибка при отправке сообщения с кодом ' + xhr.status);
+          showMessage("Ой, какие-то проблемы с сервером, приносим наши извинения");
+        }
+      };
+
+      // Отправка данных в виде JSON
+      xhr.send(JSON.stringify({ message: message }));
+      document.getElementById('message').value = "";
+    }
+  </script>
+</body>
+</html>
+    
+
