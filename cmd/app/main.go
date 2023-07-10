@@ -1,3 +1,5 @@
+package main
+
 /*
  * Project: I-wish-you-app
  * Created Date: Wednesday, July 5th 2023, 7:00:28 pm
@@ -10,8 +12,6 @@
  *
  * -----
  */
-
-package main
 
 import (
 	"fmt"

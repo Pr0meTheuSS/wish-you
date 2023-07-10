@@ -1,0 +1,22 @@
+[
+    {
+      "path": "/",
+      "method": "GET",
+      "handler": "rootPageGetHandler"
+    },
+    {
+      "path": "/login",
+      "method": "GET",
+      "handler": "loginGetHandler"
+    },
+    {
+        "path": "/login",
+        "method": "POST",
+        "handler": "loginPostHandler"
+      },
+      {
+      "path": "/send-message",
+      "method": "POST",
+      "handler": "sendMessagePostHandler"
+    }
+  ]
