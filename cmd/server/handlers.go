@@ -49,7 +49,6 @@ func sendMessagePostHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
 		return
 	}
-
 	// TODO: Убрать на релизе этот вывод
 	// Использование текста сообщения
 	fmt.Println("Текст сообщения:", message.Text)
@@ -67,8 +66,7 @@ func loginPostHandler(ctx *gin.Context) {
 	}
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
-	// TODO: Убрать на релизе этот вывод
-	fmt.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
 
+	log.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }

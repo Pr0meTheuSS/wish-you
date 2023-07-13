@@ -32,7 +32,7 @@ type Router struct {
 	router *gin.Engine
 }
 
-func NewRouter() *Router {
+func newRouter() *Router {
 	return &Router{
 		router: gin.Default(),
 	}
@@ -60,7 +60,7 @@ func (r *Router) configure() {
 
 }
 
-func (r *Router) Run(addr string) error {
+func (r *Router) run(addr string) error {
 	return r.router.Run(addr)
 }
 

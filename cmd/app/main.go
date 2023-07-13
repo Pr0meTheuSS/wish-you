@@ -15,12 +15,10 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"strconv"
+	"main/cmd/server"
 
-	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
 
 // TODO: Выделить абстракции и перенести их на подходящий уровень проекта
@@ -28,6 +26,7 @@ import (
 // TODO: Добавить логирование проекта
 
 type Configurations struct {
+	addr        string
 	port        int
 	serviceName string
 }
@@ -45,65 +44,19 @@ type Message struct {
 }
 
 func (a App) run() error {
-	fmt.Printf(
+	server := server.NewServer(a.configurations.addr, a.configurations.port)
+	log.Printf(
 		"Service %s is running, bro, server is listening port %d\n",
 		a.configurations.serviceName,
 		a.configurations.port)
 
-	router := gin.Default()
-
-	router.GET("/login", func(ctx *gin.Context) {
-		body, err := ioutil.ReadFile("cmd/pages/login-page/login.html")
-		if err != nil {
-			log.Fatalf("unable to read file: %v", err)
-		}
-		ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
-	})
-
-	router.GET("/", func(ctx *gin.Context) {
-		body, err := ioutil.ReadFile("cmd/pages/main-page/main.html")
-		if err != nil {
-			log.Fatalf("unable to read file: %v", err)
-		}
-		ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
-	})
-
-	router.POST("/send-message", func(ctx *gin.Context) {
-		// Получение тела запроса в виде структуры Message
-		var message Message
-		if err := ctx.ShouldBindJSON(&message); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
-			return
-		}
-
-		// Использование текста сообщения
-		fmt.Println("Текст сообщения:", message.Text)
-
-		// Ваша логика обработки сообщения
-
-		// Ответ сервера
-		ctx.JSON(http.StatusOK, gin.H{"status": "success"})
-	})
-
-	router.POST("/login", func(ctx *gin.Context) {
-		body, err := ioutil.ReadFile("cmd/pages/login-page/success.html")
-		if err != nil {
-			log.Fatalf("unable to read file: %v", err)
-		}
-		username := ctx.PostForm("username")
-		password := ctx.PostForm("password")
-		// TODO: Убрать на релизе этот вывод
-		fmt.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
-
-		ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
-	})
-
-	return router.Run(":" + strconv.Itoa(a.configurations.port))
+	return server.Run()
 }
 
 func loadConfigurations(configurations *Configurations) error {
-	// TODO: Реализовать чтение конфигураций из внешнего файла
+	// TODO: Реализовать чтение конфигураций из внешнего файла или из окружения
 	*configurations = Configurations{
+		addr:        "127.0.0.1",
 		port:        6969,
 		serviceName: "wish-you",
 	}

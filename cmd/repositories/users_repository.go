@@ -1,12 +1,6 @@
 package repository
 
-import (
-	"log"
-	serviceuser "main/cmd/services/ServiceUser"
-
-	"github.com/jmoiron/sqlx"
-)
-
+// TODO: протестировать работу слоя репозитория
 /*
  * Project: I-wish-you
  * Created Date: Thursday, July 13th 2023, 10:43:01 pm
@@ -19,6 +13,13 @@ import (
  *
  * -----
  */
+
+import (
+	"log"
+	serviceuser "main/cmd/services/ServiceUser"
+
+	"github.com/jmoiron/sqlx"
+)
 
 // TODO: replace const string to getenv
 func getDBDSN() string {

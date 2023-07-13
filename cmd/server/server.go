@@ -33,14 +33,14 @@ func NewServer(addr string, port int) *Server {
 	server := &Server{
 		addr:   addr,
 		port:   port,
-		router: &Router{},
+		router: newRouter(),
 	}
 	server.configure()
 	return server
 }
 
 func (s *Server) Run() error {
-	return s.router.Run(s.addr + ":" + strconv.Itoa(s.port))
+	return s.router.run(s.addr + ":" + strconv.Itoa(s.port))
 }
 
 func (s *Server) configure() {
