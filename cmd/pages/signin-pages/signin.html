@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<!--
+Project: I-wish-you
+Created Date: Friday, July 14th 2023, 3:23:45 pm
+Author: Olimpiev Y. Y.
+-----
+Last Modified:  yr.olimpiev@gmail.com
+Modified By: Olimpiev Y. Y.
+-----
+Copyright (c) 2023 NSU
+
+-----
+-->
+
+<html>
+<head>
+  <title>Регистрация</title>
+  <style>
+    body {
+      background-color: #222;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    h2 {
+      color: #fff;
+    }
+
+    .registration-form {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .registration-form label {
+      display: block;
+      margin-bottom: 10px;
+      color: #fff;
+      text-align: left;
+    }
+
+    .registration-form input[type="text"],
+    .registration-form input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+
+    .registration-form input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .registration-form input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    .registration-form input[type="submit"]:active {
+      transform: translateY(2px);
+    }
+
+    .registration-form .password-repeat {
+      margin-top: 10px;
+    }
+
+    .registration-form .password-repeat label {
+      margin-top: 20px;
+    }
+
+    .registration-form .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .registration-form input:disabled[type="submit"] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+  <script>
+    function checkPasswordMatch() {
+      var password = document.getElementById("password").value;
+      var passwordRepeat = document.getElementById("passwordRepeat").value;
+      var errorElement = document.getElementById("passwordMatchError");
+
+      if (password === passwordRepeat) {
+        errorElement.style.display = "none";
+      } else {
+        errorElement.style.display = "block";
+      }
+      
+      validateForm();
+    }
+
+    function validateEmail() {
+      var email = document.getElementById("email").value;
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      var errorElement = document.getElementById("emailValidationError");
+
+      if (emailRegex.test(email)) {
+        errorElement.style.display = "none";
+      } else {
+        errorElement.style.display = "block";
+      }
+      
+      validateForm();
+    }
+    
+    function validateForm() {
+      var username = document.getElementById("username").value;
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      var passwordRepeat = document.getElementById("passwordRepeat").value;
+      var registerButton = document.getElementById("registerButton");
+      
+      if (username !== "" && email !== "" && password !== "" && password === passwordRepeat) {
+        registerButton.disabled = false;
+      } else {
+        registerButton.disabled = true;
+      }
+    }
+    
+    function registerUser() {
+      var username = document.getElementById("username").value;
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+
+      var data = {
+        username: username,
+        email: email,
+        password: password
+      };
+
+      fetch('/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+        })
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(data) {
+          // Получение поля redirectURL из JSON-ответа
+          var redirectURL = data.redirectURL;
+
+          // Перенаправление пользователя на указанный URL-адрес
+          window.location.href = redirectURL;
+        })
+        .catch(function(error) {
+          console.log('Ошибка при регистрации:', error);
+        });
+    }
+  </script>
+</head>
+<body>
+  <h2>Регистрация</h2>
+
+  <div class="registration-form">
+      <label for="username">Имя пользователя:</label>
+      <input type="text" id="username" name="username" required oninput="validateForm()"><br>
+
+      <label for="email">Email:</label>
+      <input type="text" id="email" name="email" required oninput="validateEmail()"><br>
+      <div class="error-message" id="emailValidationError" style="display: none;">Неверный адрес почты</div>
+
+      <label for="password">Пароль:</label>
+      <input type="password" id="password" name="password" required oninput="checkPasswordMatch()"><br>
+
+      <label for="passwordRepeat">Повторите пароль:</label>
+      <input type="password" id="passwordRepeat" name="passwordRepeat" required oninput="checkPasswordMatch()"><br>
+      <div class="error-message" id="passwordMatchError" style="display: none;">Пароли не совпадают</div>
+
+      <input type="submit" value="Зарегистрироваться" id="registerButton" disabled onclick="registerUser()">
+  </div>
+</body>
+</html>

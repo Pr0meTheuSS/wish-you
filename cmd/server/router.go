@@ -26,6 +26,8 @@ var handlers = map[string]gin.HandlerFunc{
 	"loginGetHandler":        loginGetHandler,
 	"loginPostHandler":       loginPostHandler,
 	"sendMessagePostHandler": sendMessagePostHandler,
+	"signinPostHandler":      signinPostHandler,
+	"signinGetHandler":       signinGetHandler,
 }
 
 type Router struct {

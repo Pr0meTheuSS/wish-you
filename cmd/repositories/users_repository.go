@@ -15,10 +15,13 @@ package repository
  */
 
 import (
+	"errors"
+	"fmt"
 	"log"
-	serviceuser "main/cmd/services/ServiceUser"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 // TODO: replace const string to getenv
@@ -28,33 +31,43 @@ func getDBDSN() string {
 
 var DB *sqlx.DB
 
-func init() {
-	DB, err := sqlx.Open("postgres", getDBDSN())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer DB.Close()
-}
-
 type RepositoryUser struct {
 	Name     string
 	Email    string
 	Password string
 }
 
-func IsnertUser(serviceUser serviceuser.ServiceUser) error {
-	repositoryUser := RepositoryUser{
-		Name:     serviceUser.Name,
-		Email:    serviceUser.Email,
-		Password: serviceUser.Password,
+func InsertUser(repositoryUser RepositoryUser) error {
+	log.Printf("Insert user %v", repositoryUser)
+	// Открытие соединения с базой данных
+	db, err := sqlx.Connect("postgres", getDBDSN())
+	if err != nil {
+		log.Fatalf("unable to connect to database: %v", err)
 	}
-	// TODO: Добавить миграцию базы для увеличения метаинформации о пользователе
-	//DB.Exec("INSERT INTO users (name, email, password, createdat) VALUES (?, ?, ?)")
-	_, err := DB.Exec("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+	defer db.Close()
+
+	log.Printf("Exec query for insert user %v", repositoryUser)
+	_, err = db.Exec("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
 		repositoryUser.Name,
 		repositoryUser.Email,
 		repositoryUser.Password)
 	// TODO: размаршалить ошибку, то есть
-	// Понять что произошло на уровне запроса и вернуть ответ на уровне репозитория
-	return err
+	// Понять что произошло на уровне запроса и вернуть ответ на уровне репози
+	return handleDBErrors(err)
+}
+
+func handleDBErrors(err error) error {
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Constraint == "users_email_key" && pqErr.Code.Name() == "unique_violation" {
+				// Обработка ошибки дублирования уникального ключа
+				fmt.Println("Пользователь с таким email уже существует")
+				return errors.New("constraint error: user already exists")
+			}
+		}
+		return errors.New("unknown error")
+	}
+
+	return nil
 }

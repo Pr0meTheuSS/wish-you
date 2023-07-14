@@ -14,9 +14,11 @@ package server
  */
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	serviceuser "main/cmd/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -68,5 +70,50 @@ func loginPostHandler(ctx *gin.Context) {
 	password := ctx.PostForm("password")
 
 	log.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+}
+
+type User struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SigninPostResponse struct {
+	RedirectURL string `json:"redirectURL"`
+}
+
+func signinPostHandler(ctx *gin.Context) {
+	// Чтение JSON данных из запроса
+	var user User
+	if err := json.NewDecoder(ctx.Request.Body).Decode(&user); err != nil {
+		log.Printf("unable to decode JSON: %v", err)
+		// Обработка ошибки
+		return
+	}
+
+	// Создание объекта Response с полем redirectURL
+	response := SigninPostResponse{
+		RedirectURL: "/success-signin",
+	}
+
+	log.Printf("Handle post request for /signin\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
+	if err := serviceuser.RegisterUser(serviceuser.NewUser(user.Username, user.Email, user.Password)); err != nil {
+		fmt.Print(err)
+		log.Printf("%v", err)
+		// TODO: в случае внутренней ошибки сервиса обеспечить редирект на страницу с ошибкой
+		response = SigninPostResponse{
+			RedirectURL: "/fatal-signin",
+		}
+	}
+
+	// Отправка JSON-ответа с полем redirectURL
+	ctx.JSON(http.StatusOK, response)
+}
+func signinGetHandler(ctx *gin.Context) {
+	body, err := ioutil.ReadFile("cmd/pages/signin-pages/signin.html")
+	if err != nil {
+		log.Fatalf("unable to read file: %v", err)
+	}
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }

@@ -13,10 +13,20 @@
         "path": "/login",
         "method": "POST",
         "handler": "loginPostHandler"
-      },
-      {
+    },
+    {
       "path": "/send-message",
       "method": "POST",
       "handler": "sendMessagePostHandler"
+    },
+    {
+      "path": "/signin",
+      "method": "GET",
+      "handler": "signinGetHandler"
+    },
+    {
+      "path": "/signin",
+      "method": "POST",
+      "handler": "signinPostHandler"
     }
   ]
