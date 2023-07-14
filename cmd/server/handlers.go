@@ -16,7 +16,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+    "os"
 	"log"
 	serviceuser "main/cmd/services"
 	"net/http"
@@ -25,7 +25,7 @@ import (
 )
 
 func loginGetHandler(ctx *gin.Context) {
-	body, err := ioutil.ReadFile("cmd/pages/login-page/login.html")
+	body, err := os.ReadFile("cmd/pages/login-page/login.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -33,7 +33,7 @@ func loginGetHandler(ctx *gin.Context) {
 }
 
 func rootPageGetHandler(ctx *gin.Context) {
-	body, err := ioutil.ReadFile("cmd/pages/main-page/main.html")
+	body, err := os.ReadFile("cmd/pages/main-page/main.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -62,7 +62,7 @@ func sendMessagePostHandler(ctx *gin.Context) {
 }
 
 func loginPostHandler(ctx *gin.Context) {
-	body, err := ioutil.ReadFile("cmd/pages/login-page/success.html")
+	body, err := os.ReadFile("cmd/pages/login-page/success.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -111,9 +111,10 @@ func signinPostHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 func signinGetHandler(ctx *gin.Context) {
-	body, err := ioutil.ReadFile("cmd/pages/signin-pages/signin.html")
+	body, err := os.ReadFile("cmd/pages/signin-pages/signin.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
+
