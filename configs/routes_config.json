@@ -20,23 +20,28 @@
       "handler": "sendMessagePostHandler"
     },
     {
-      "path": "/signin",
+      "path": "/signup",
       "method": "GET",
-      "handler": "signinGetHandler"
+      "handler": "signupGetHandler"
     },
     {
-      "path": "/signin",
+      "path": "/signup",
       "method": "POST",
-      "handler": "signinPostHandler"
+      "handler": "signupPostHandler"
     },
     {
-      "path": "/signin-success",
+      "path": "/signup-success",
       "method": "GET",
-      "handler": "signinSuccessGetHandler"
+      "handler": "signupSuccessGetHandler"
     },
     {
-      "path": "/signin-fatal",
+      "path": "/signup-fatal",
       "method": "GET",
-      "handler": "signinFatalGetHandler"
+      "handler": "signupFatalGetHandler"
+    },
+    {
+      "path": "/welcome",
+      "method": "GET",
+      "handler": "welcomeGetHandler"
     }
   ]

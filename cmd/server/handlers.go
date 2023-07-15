@@ -2,6 +2,7 @@ package server
 
 // REFACTOR:  перенести полезную нагрузку работы хэндлеров на уровень сервисов
 // REFACTOR:  перенести используемые типы в отдельный файл
+// FIX: удалить log.Fatalf для случая невозможночти чтения файла страницы
 
 /*
  * Project: I-wish-you
@@ -20,7 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	serviceuser "main/cmd/services"
+	service "main/cmd/services"
 	"net/http"
 	"os"
 
@@ -32,10 +33,11 @@ var handlers = map[string]gin.HandlerFunc{
 	"loginGetHandler":         loginGetHandler,
 	"loginPostHandler":        loginPostHandler,
 	"sendMessagePostHandler":  sendMessagePostHandler,
-	"signinPostHandler":       signinPostHandler,
-	"signinGetHandler":        signinGetHandler,
-	"signinSuccessGetHandler": signinSuccessGetHandler,
-	"signinFatalGetHandler":   signinFatalGetHandler,
+	"signupPostHandler":       signupPostHandler,
+	"signupGetHandler":        signupGetHandler,
+	"signupSuccessGetHandler": signupSuccessGetHandler,
+	"signupFatalGetHandler":   signupFatalGetHandler,
+	"welcomeGetHandler":       welcomeGetHandler,
 }
 
 // Функция получает обработчик функции по имени
@@ -49,7 +51,7 @@ func getHandlerByName(handlerName string) gin.HandlerFunc {
 }
 
 func loginGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/login-page/login.html")
+	body, err := os.ReadFile("cmd/pages/login-pages/login.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -58,7 +60,7 @@ func loginGetHandler(ctx *gin.Context) {
 }
 
 func rootPageGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/main-page/main.html")
+	body, err := os.ReadFile("cmd/pages/main-pages/main.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -88,7 +90,7 @@ func sendMessagePostHandler(ctx *gin.Context) {
 }
 
 func loginPostHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/login-page/success.html")
+	body, err := os.ReadFile("cmd/pages/login-pages/success.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -105,11 +107,11 @@ type User struct {
 	Password string `json:"password"`
 }
 
-type SigninPostResponse struct {
+type RedirectPostResponse struct {
 	RedirectURL string `json:"redirectURL"`
 }
 
-func signinPostHandler(ctx *gin.Context) {
+func signupPostHandler(ctx *gin.Context) {
 	// Чтение JSON данных из запроса
 	var user User
 	if err := json.NewDecoder(ctx.Request.Body).Decode(&user); err != nil {
@@ -119,25 +121,25 @@ func signinPostHandler(ctx *gin.Context) {
 	}
 
 	// Создание объекта Response с полем redirectURL
-	response := SigninPostResponse{
-		RedirectURL: "/signin-success",
+	response := RedirectPostResponse{
+		RedirectURL: "/signup-success",
 	}
 
-	log.Printf("Handle post request for /signin\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
-	if err := serviceuser.RegisterUser(serviceuser.NewUser(user.Username, user.Email, user.Password)); err != nil {
+	log.Printf("Handle post request for /signup\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
+	if err := service.RegisterUser(service.NewUser(user.Username, user.Email, user.Password)); err != nil {
 		fmt.Print(err)
 		log.Printf("%v", err)
 		// TODO: в случае внутренней ошибки сервиса обеспечить редирект на страницу с ошибкой
-		response = SigninPostResponse{
-			RedirectURL: "/signin-fatal",
+		response = RedirectPostResponse{
+			RedirectURL: "/signup-fatal",
 		}
 	}
 
 	// Отправка JSON-ответа с полем redirectURL
 	ctx.JSON(http.StatusOK, response)
 }
-func signinGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signin-pages/signin.html")
+func signupGetHandler(ctx *gin.Context) {
+	body, err := os.ReadFile("cmd/pages/signup-pages/signup.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -145,8 +147,8 @@ func signinGetHandler(ctx *gin.Context) {
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
-func signinSuccessGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signin-pages/signin-success.html")
+func signupSuccessGetHandler(ctx *gin.Context) {
+	body, err := os.ReadFile("cmd/pages/signup-pages/signup-success.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
@@ -154,10 +156,21 @@ func signinSuccessGetHandler(ctx *gin.Context) {
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
-func signinFatalGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signin-pages/signin-fatal.html")
+func signupFatalGetHandler(ctx *gin.Context) {
+	body, err := os.ReadFile("cmd/pages/signup-pages/signup-fatal.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
+	}
+
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+}
+
+func welcomeGetHandler(ctx *gin.Context) {
+	body, err := service.LoadPage("welcome-page")
+	if err != nil {
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)

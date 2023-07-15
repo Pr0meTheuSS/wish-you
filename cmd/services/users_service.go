@@ -1,4 +1,4 @@
-package serviceuser
+package service
 
 import (
 	repository "main/cmd/repositories"

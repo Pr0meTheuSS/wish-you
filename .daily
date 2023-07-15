@@ -1,9 +1,9 @@
 
-# 11.07.2023
-    С помощью утилиты migrate выполнил все миграции с суффиксом up в папке /schema для базы postgres
-    (пользователь пароль  для базы = postgres password, внешний порт определен как 5431)
-    
-    migrate -path ./schema -database 'postgres://postgres:password@localhost:5431/postgres?sslmode=disable' up
+  С помощью утилиты migrate выполнил все миграции с суффиксом up в папке /schema для базы postgres
+  (пользователь пароль  для базы = postgres password, внешний порт определен как 5431)
+  
+  migrate -path ./schema -database 'postgres://postgres:password@localhost:5431/postgres?sslmode=disable' up
+
 С помощью команды 
 sudo docker run -d \                                                            
   --name postgres \
@@ -12,4 +12,7 @@ sudo docker run -d \
   -p 5431:5432 \
   postgres:latest
 поднимаю локально базу данных
-С помощью команды sudo docker exec -it <container-id> /bin/bash получаю доступ к откружению, в котором развернута база данных.
+
+С помощью команды 
+sudo docker exec -it <container-id> /bin/bash 
+получаю доступ к откружению, в котором развернута база данных.
