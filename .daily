@@ -4,4 +4,12 @@
     (пользователь пароль  для базы = postgres password, внешний порт определен как 5431)
     
     migrate -path ./schema -database 'postgres://postgres:password@localhost:5431/postgres?sslmode=disable' up
-
+С помощью команды 
+sudo docker run -d \                                                            
+  --name postgres \
+  -e POSTGRES_PASSWORD=password \
+  -v /home/prometheus/home/prometheus/db-host:/var/lib/postgresql/data \
+  -p 5431:5432 \
+  postgres:latest
+поднимаю локально базу данных
+С помощью команды sudo docker exec -it <container-id> /bin/bash получаю доступ к откружению, в котором развернута база данных.
