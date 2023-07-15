@@ -21,15 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var handlers = map[string]gin.HandlerFunc{
-	"rootPageGetHandler":     rootPageGetHandler,
-	"loginGetHandler":        loginGetHandler,
-	"loginPostHandler":       loginPostHandler,
-	"sendMessagePostHandler": sendMessagePostHandler,
-	"signinPostHandler":      signinPostHandler,
-	"signinGetHandler":       signinGetHandler,
-}
-
 type Router struct {
 	router *gin.Engine
 }
@@ -77,14 +68,4 @@ func registerHandler(router *gin.Engine, route Route) {
 	default:
 		log.Printf("Неизвестный метод: %s", route.Method)
 	}
-}
-
-// Функция получает обработчик функции по имени
-func getHandlerByName(handlerName string) gin.HandlerFunc {
-	if res, ok := handlers[handlerName]; ok {
-		return res
-	}
-
-	log.Printf("Неизвестный обработчик: %s", handlerName)
-	return nil
 }

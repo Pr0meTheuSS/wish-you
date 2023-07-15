@@ -1,5 +1,8 @@
 package server
 
+// REFACTOR:  перенести полезную нагрузку работы хэндлеров на уровень сервисов
+// REFACTOR:  перенести используемые типы в отдельный файл
+
 /*
  * Project: I-wish-you
  * Created Date: Sunday, July 9th 2023, 10:58:30 am
@@ -16,19 +19,41 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-    "os"
 	"log"
 	serviceuser "main/cmd/services"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
+
+var handlers = map[string]gin.HandlerFunc{
+	"rootPageGetHandler":      rootPageGetHandler,
+	"loginGetHandler":         loginGetHandler,
+	"loginPostHandler":        loginPostHandler,
+	"sendMessagePostHandler":  sendMessagePostHandler,
+	"signinPostHandler":       signinPostHandler,
+	"signinGetHandler":        signinGetHandler,
+	"signinSuccessGetHandler": signinSuccessGetHandler,
+	"signinFatalGetHandler":   signinFatalGetHandler,
+}
+
+// Функция получает обработчик функции по имени
+func getHandlerByName(handlerName string) gin.HandlerFunc {
+	if res, ok := handlers[handlerName]; ok {
+		return res
+	}
+
+	log.Printf("Неизвестный обработчик: %s", handlerName)
+	return nil
+}
 
 func loginGetHandler(ctx *gin.Context) {
 	body, err := os.ReadFile("cmd/pages/login-page/login.html")
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
+
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
@@ -37,6 +62,7 @@ func rootPageGetHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
+
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
@@ -94,7 +120,7 @@ func signinPostHandler(ctx *gin.Context) {
 
 	// Создание объекта Response с полем redirectURL
 	response := SigninPostResponse{
-		RedirectURL: "/success-signin",
+		RedirectURL: "/signin-success",
 	}
 
 	log.Printf("Handle post request for /signin\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
@@ -103,7 +129,7 @@ func signinPostHandler(ctx *gin.Context) {
 		log.Printf("%v", err)
 		// TODO: в случае внутренней ошибки сервиса обеспечить редирект на страницу с ошибкой
 		response = SigninPostResponse{
-			RedirectURL: "/fatal-signin",
+			RedirectURL: "/signin-fatal",
 		}
 	}
 
@@ -115,6 +141,24 @@ func signinGetHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 	}
+
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
+func signinSuccessGetHandler(ctx *gin.Context) {
+	body, err := os.ReadFile("cmd/pages/signin-pages/signin-success.html")
+	if err != nil {
+		log.Fatalf("unable to read file: %v", err)
+	}
+
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+}
+
+func signinFatalGetHandler(ctx *gin.Context) {
+	body, err := os.ReadFile("cmd/pages/signin-pages/signin-fatal.html")
+	if err != nil {
+		log.Fatalf("unable to read file: %v", err)
+	}
+
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+}

@@ -28,5 +28,15 @@
       "path": "/signin",
       "method": "POST",
       "handler": "signinPostHandler"
+    },
+    {
+      "path": "/signin-success",
+      "method": "GET",
+      "handler": "signinSuccessGetHandler"
+    },
+    {
+      "path": "/signin-fatal",
+      "method": "GET",
+      "handler": "signinFatalGetHandler"
     }
   ]
