@@ -25,7 +25,7 @@ import (
 )
 
 // TODO: replace const string to getenv
-func getDBDSN() string {
+func GetDBDSN() string {
 	return "postgres://postgres:password@localhost:5431/postgres?sslmode=disable"
 }
 
@@ -40,7 +40,7 @@ type RepositoryUser struct {
 func InsertUser(repositoryUser RepositoryUser) error {
 	log.Printf("Insert user %v", repositoryUser)
 	// Открытие соединения с базой данных
-	db, err := sqlx.Connect("postgres", getDBDSN())
+	db, err := sqlx.Connect("postgres", GetDBDSN())
 	if err != nil {
 		log.Fatalf("unable to connect to database: %v", err)
 	}

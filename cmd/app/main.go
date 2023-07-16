@@ -16,8 +16,10 @@ package main
 import (
 	"fmt"
 	"log"
+	repository "main/cmd/repositories"
 	"main/cmd/server"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -44,6 +46,13 @@ type Message struct {
 }
 
 func (a App) run() error {
+	// Открытие соединения с базой данных для проверки корректности работы связи с бд
+	db, err := sqlx.Connect("postgres", repository.GetDBDSN())
+	if err != nil {
+		log.Fatalf("unable to connect to database: %v", err)
+	}
+	defer db.Close()
+
 	server := server.NewServer(a.configurations.addr, a.configurations.port)
 	log.Printf(
 		"Service %s is running, bro, server is listening port %d\n",

@@ -1,9 +1,5 @@
 package service
 
-import (
-	repository "main/cmd/repositories"
-)
-
 /*
  * Project: I-wish-you
  * Created Date: Thursday, July 13th 2023, 11:14:21 pm
@@ -16,6 +12,11 @@ import (
  *
  * -----
  */
+
+import (
+	"log"
+	repository "main/cmd/repositories"
+)
 
 type ServiceUser struct {
 	Name     string
@@ -32,6 +33,11 @@ func NewUser(name string, email string, password string) ServiceUser {
 }
 
 func RegisterUser(user ServiceUser) error {
+	if err := SendConfirmMail(user.Email); err != nil {
+		log.Printf("Ошибка отправки сообщения с подтверждением")
+		return err
+	}
+
 	// TODO: обработать ошибки и смаппить ошибку репозитория в ошибку сервиса
 	return repository.InsertUser(repository.RepositoryUser{
 		Name:     user.Name,
