@@ -14,9 +14,11 @@ package server
  */
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,7 +52,6 @@ func (r *Router) configure() {
 		// Регистрируем маршрут и обработчик в маршрутизаторе
 		registerHandler(r.router, route)
 	}
-
 }
 
 func (r *Router) run(addr string) error {
@@ -62,10 +63,69 @@ func registerHandler(router *gin.Engine, route Route) {
 	handlerFunc := getHandlerByName(route.Handler)
 	switch route.Method {
 	case "GET":
-		router.GET(route.Path, handlerFunc)
+		if route.Access == "private" {
+			router.GET(route.Path, handlerFunc, authorizeMiddleware)
+		} else {
+			router.GET(route.Path, handlerFunc)
+		}
 	case "POST":
-		router.POST(route.Path, handlerFunc)
+		if route.Access == "private" {
+			router.POST(route.Path, handlerFunc, authorizeMiddleware)
+		} else {
+			router.POST(route.Path, handlerFunc)
+		}
 	default:
 		log.Printf("Неизвестный метод: %s", route.Method)
+	}
+}
+
+// TODO: выделить в интерфейс и сделать фабрику в зависимости от первого слова заголовка Authorization
+func authorizeMiddleware(ctx *gin.Context) {
+	log.Println("authorize Middleware is called")
+	authHeader := ctx.GetHeader("Authorization")
+	log.Printf("Header %s", authHeader)
+
+	if authHeader == "" {
+		ctx.String(401, "Требуется авторизация")
+		ctx.Abort()
+		return
+	}
+	// TODO: реализовать обработку ошибок на этапе авторизации
+	// TODO: Придумать как отправлять запрос на редирект на главную страницу
+	// TODO: Реализовать нормальный запрос с закодированными данными в заголовке на javascript
+
+	// Проверяем, что заголовок Authorization начинается с "Basic "
+	if strings.HasPrefix(authHeader, "Basic ") {
+		// Извлекаем токен из строки "Basic base64(username:password)"
+		token := strings.TrimPrefix(authHeader, "Basic ")
+
+		// Декодируем base64
+		decodedToken, err := base64.StdEncoding.DecodeString(token)
+		if err != nil {
+			ctx.String(400, "Ошибка при декодировании токена")
+			ctx.Abort()
+			return
+		}
+
+		// Преобразуем в строку и разделяем имя пользователя и пароль
+		credentials := strings.SplitN(string(decodedToken), ":", 2)
+		if len(credentials) != 2 {
+			ctx.String(400, "Ошибка при извлечении имени пользователя и пароля")
+			ctx.Abort()
+			return
+		}
+
+		email := credentials[0]
+		password := credentials[1]
+		log.Printf("email %s and password %s from headers\n", email, password)
+		//		if ok, _ := service.AuthorizeUser(service.ServiceUser{Name: "", Email: email, Password: password}); ok {
+		ctx.Next()
+		// } else {
+		// 	ctx.Abort()
+		// }
+
+	} else {
+		ctx.String(401, "Неподдерживаемая схема аутентификации")
+		ctx.Abort()
 	}
 }

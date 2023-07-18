@@ -1,47 +1,62 @@
 [
     {
       "path": "/",
+      "access": "private",
       "method": "GET",
       "handler": "rootPageGetHandler"
     },
     {
       "path": "/login",
+      "access": "public",
       "method": "GET",
       "handler": "loginGetHandler"
     },
     {
         "path": "/login",
+        "access": "public",
         "method": "POST",
         "handler": "loginPostHandler"
     },
     {
       "path": "/send-message",
+      "access": "public",
       "method": "POST",
       "handler": "sendMessagePostHandler"
     },
     {
       "path": "/signup",
+      "access": "public",
       "method": "GET",
       "handler": "signupGetHandler"
     },
     {
       "path": "/signup",
+      "access": "public",
       "method": "POST",
       "handler": "signupPostHandler"
     },
     {
       "path": "/signup-success",
+      "access": "public",
       "method": "GET",
       "handler": "signupSuccessGetHandler"
     },
     {
       "path": "/signup-fatal",
+      "access": "public",
       "method": "GET",
       "handler": "signupFatalGetHandler"
     },
     {
       "path": "/welcome",
+      "access": "public",
       "method": "GET",
       "handler": "welcomeGetHandler"
+    },
+    {
+      "path": "/favicon.ico", 
+      "access": "public",
+      "method": "GET",
+      "handler": "faviconGetHandler"
     }
   ]

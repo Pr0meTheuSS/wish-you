@@ -20,6 +20,7 @@ import (
 	"main/cmd/server"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -46,6 +47,12 @@ type Message struct {
 }
 
 func (a App) run() error {
+	// Загрузка переменных окружения из файла .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Ошибка при загрузке файла .env:", err)
+	}
+
 	// Открытие соединения с базой данных для проверки корректности работы связи с бд
 	db, err := sqlx.Connect("postgres", repository.GetDBDSN())
 	if err != nil {

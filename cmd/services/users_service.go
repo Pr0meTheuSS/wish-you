@@ -48,3 +48,17 @@ func RegisterUser(user ServiceUser) error {
 
 	return nil
 }
+
+func AuthorizeUser(user ServiceUser) (bool, error) {
+	_, err := repository.GetUser(repository.RepositoryUser{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

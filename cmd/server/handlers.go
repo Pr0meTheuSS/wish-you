@@ -17,7 +17,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	service "main/cmd/services"
 	"net/http"
@@ -35,6 +34,7 @@ var handlers = map[string]gin.HandlerFunc{
 	"signupSuccessGetHandler": signupSuccessGetHandler,
 	"signupFatalGetHandler":   signupFatalGetHandler,
 	"welcomeGetHandler":       welcomeGetHandler,
+	"faviconGetHandler":       faviconGetHandler,
 }
 
 // Функция получает обработчик функции по имени
@@ -48,25 +48,11 @@ func getHandlerByName(handlerName string) gin.HandlerFunc {
 }
 
 func loginGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("login")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
-
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+	returnTargetPageOrNotFound("login", ctx)
 }
 
 func rootPageGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("main")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
-
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+	returnTargetPageOrNotFound("main", ctx)
 }
 
 type Message struct {
@@ -80,29 +66,19 @@ func sendMessagePostHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
 		return
 	}
-	// TODO: Убрать на релизе этот вывод
-	// Использование текста сообщения
-	fmt.Println("Текст сообщения:", message.Text)
 
-	// Ваша логика обработки сообщения
+	// TODO: Логика обработки сообщения
 
 	// Ответ сервера
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
 func loginPostHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("login-success")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
-
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
 
 	log.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+	returnTargetPageOrNotFound("login-success", ctx)
 }
 
 type User struct {
@@ -131,9 +107,7 @@ func signupPostHandler(ctx *gin.Context) {
 
 	log.Printf("Handle post request for /signup\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
 	if err := service.RegisterUser(service.NewUser(user.Username, user.Email, user.Password)); err != nil {
-		fmt.Print(err)
 		log.Printf("%v", err)
-		// TODO: в случае внутренней ошибки сервиса обеспечить редирект на страницу с ошибкой
 		response = RedirectPostResponse{
 			RedirectURL: "/signup-fatal",
 		}
@@ -142,44 +116,36 @@ func signupPostHandler(ctx *gin.Context) {
 	// Отправка JSON-ответа с полем redirectURL
 	ctx.JSON(http.StatusOK, response)
 }
-func signupGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("signup")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
 
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+func signupGetHandler(ctx *gin.Context) {
+	returnTargetPageOrNotFound("signup", ctx)
 }
 
 func signupSuccessGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("signup-success")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
-
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+	returnTargetPageOrNotFound("signup-success", ctx)
 }
 
 func signupFatalGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("signup-fatal")
-	if err != nil {
-		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
-		return
-	}
-
-	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
+	returnTargetPageOrNotFound("signup-fatal", ctx)
 }
 
 func welcomeGetHandler(ctx *gin.Context) {
-	body, err := service.LoadPage("welcome-page")
+	returnTargetPageOrNotFound("welcome-page", ctx)
+}
+
+func pageNotFound(ctx *gin.Context) {
+	ctx.JSON(http.StatusNotFound, gin.H{"message": "Страница не найдена"})
+}
+
+func faviconGetHandler(ctx *gin.Context) {
+	ctx.File("favicon.ico")
+}
+
+func returnTargetPageOrNotFound(pageName string, ctx *gin.Context) {
+	body, err := service.LoadPage(pageName)
 	if err != nil {
 		log.Printf("Page loading finished wtih error %v", err)
-		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		pageNotFound(ctx)
 		return
 	}
 

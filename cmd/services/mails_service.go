@@ -18,22 +18,27 @@ import (
 	"fmt"
 	"log"
 	"net/smtp"
-)
+	"os"
+	"strconv"
 
-const (
-	// Учетные данные для доступа к SMTP-серверу Gmail
-	email    = "yr.olimpiev@gmail.com"
-	password = "stkkftucujhicqxp"
-	// Настройки SMTP-сервера Gmail
-	smtpHost = "smtp.gmail.com"
-	smtpPort = 587
-	// Тело письма
-	// TODO: реализовать сообщение подтверждения с редиректом на уникальную страницу подтверждения
-	// для этой страницы, очевидно, понадобится обработчик
-	body = "Привет, спасибо за регистрацию!"
+	"github.com/ztrue/tracerr"
 )
 
 func SendConfirmMail(recipientEmail string) error {
+	// Учетные данные для доступа к SMTP-серверу Gmail
+	email := os.Getenv("SMTP_EMAIL")
+	password := os.Getenv("SMTP_PASSWORD")
+	// Настройки SMTP-сервера Gmail
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return tracerr.Errorf("Cannot parse int from variable %s", "SMTP_PORT")
+	}
+
+	// Тело письма
+	// TODO: реализовать сообщение подтверждения с редиректом на уникальную страницу подтверждения
+	// для этой страницы, очевидно, понадобится обработчик
+	body := "Привет, спасибо за регистрацию!"
 	// Формирование аутентификационных данных
 	auth := smtp.PlainAuth("", email, password, smtpHost)
 

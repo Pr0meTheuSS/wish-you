@@ -27,6 +27,7 @@ type Route struct {
 	Path    string `json:"path"`
 	Method  string `json:"method"`
 	Handler string `json:"handler"`
+	Access  string `json:"access"`
 }
 
 func NewServer(addr string, port int) *Server {
