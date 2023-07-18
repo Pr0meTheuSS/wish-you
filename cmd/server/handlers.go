@@ -1,7 +1,5 @@
 package server
 
-// REFACTOR:  перенести используемые типы в отдельный файл
-
 /*
  * Project: I-wish-you
  * Created Date: Sunday, July 9th 2023, 10:58:30 am

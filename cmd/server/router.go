@@ -64,13 +64,13 @@ func registerHandler(router *gin.Engine, route Route) {
 	switch route.Method {
 	case "GET":
 		if route.Access == "private" {
-			router.GET(route.Path, handlerFunc, authorizeMiddleware)
+			router.GET(route.Path, authorizeMiddleware, handlerFunc)
 		} else {
 			router.GET(route.Path, handlerFunc)
 		}
 	case "POST":
 		if route.Access == "private" {
-			router.POST(route.Path, handlerFunc, authorizeMiddleware)
+			router.POST(route.Path, authorizeMiddleware, handlerFunc)
 		} else {
 			router.POST(route.Path, handlerFunc)
 		}
