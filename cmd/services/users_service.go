@@ -33,15 +33,18 @@ func NewUser(name string, email string, password string) ServiceUser {
 }
 
 func RegisterUser(user ServiceUser) error {
+	if err := repository.InsertUser(repository.RepositoryUser{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+	}); err != nil {
+		return err
+	}
+
 	if err := SendConfirmMail(user.Email); err != nil {
 		log.Printf("Ошибка отправки сообщения с подтверждением")
 		return err
 	}
 
-	// TODO: обработать ошибки и смаппить ошибку репозитория в ошибку сервиса
-	return repository.InsertUser(repository.RepositoryUser{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
-	})
+	return nil
 }

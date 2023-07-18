@@ -28,11 +28,12 @@ const (
 	smtpHost = "smtp.gmail.com"
 	smtpPort = 587
 	// Тело письма
+	// TODO: реализовать сообщение подтверждения с редиректом на уникальную страницу подтверждения
+	// для этой страницы, очевидно, понадобится обработчик
 	body = "Привет, спасибо за регистрацию!"
 )
 
 func SendConfirmMail(recipientEmail string) error {
-	recipientEmail = "y.olimpiev@g.nsu.ru"
 	// Формирование аутентификационных данных
 	auth := smtp.PlainAuth("", email, password, smtpHost)
 

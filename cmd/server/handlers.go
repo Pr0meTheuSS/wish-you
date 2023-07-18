@@ -1,8 +1,6 @@
 package server
 
-// REFACTOR:  перенести полезную нагрузку работы хэндлеров на уровень сервисов
 // REFACTOR:  перенести используемые типы в отдельный файл
-// FIX: удалить log.Fatalf для случая невозможночти чтения файла страницы
 
 /*
  * Project: I-wish-you
@@ -23,7 +21,6 @@ import (
 	"log"
 	service "main/cmd/services"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,18 +48,22 @@ func getHandlerByName(handlerName string) gin.HandlerFunc {
 }
 
 func loginGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/login-pages/login.html")
+	body, err := service.LoadPage("login")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
 func rootPageGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/main-pages/main.html")
+	body, err := service.LoadPage("main")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
@@ -90,10 +91,13 @@ func sendMessagePostHandler(ctx *gin.Context) {
 }
 
 func loginPostHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/login-pages/success.html")
+	body, err := service.LoadPage("login-success")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
+
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
 
@@ -139,27 +143,33 @@ func signupPostHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 func signupGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signup-pages/signup.html")
+	body, err := service.LoadPage("signup")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
 func signupSuccessGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signup-pages/signup-success.html")
+	body, err := service.LoadPage("signup-success")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
 }
 
 func signupFatalGetHandler(ctx *gin.Context) {
-	body, err := os.ReadFile("cmd/pages/signup-pages/signup-fatal.html")
+	body, err := service.LoadPage("signup-fatal")
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Page loading finished wtih error %v", err)
+		ctx.Data(http.StatusNotFound, "text/html; charset=utf-8", []byte{})
+		return
 	}
 
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", body)
