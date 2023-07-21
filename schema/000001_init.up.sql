@@ -8,7 +8,9 @@ CREATE TABLE users (
   -- Электронная почта пользователя, уникальное поле (на одну почту - только один пользователь)
   email VARCHAR(50) UNIQUE,
   -- Хэш от пароля пользователя
-  password VARCHAR(50)
+  password VARCHAR(256),
+
+  confirmed BOOLEAN NOT NULL DEFAULT false
 );
 
 -- Создание таблицы "postcards"

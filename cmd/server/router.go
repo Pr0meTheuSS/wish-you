@@ -14,9 +14,10 @@ package server
  */
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"log"
+	internal "main/cmd/server/internal"
+	service "main/cmd/services"
 	"os"
 	"strings"
 
@@ -39,6 +40,7 @@ func (r *Router) configure() {
 	if err != nil {
 		log.Fatal("Не удалось открыть файл конфигурации: ", err)
 	}
+
 	defer configFile.Close()
 
 	// Декодируем содержимое файла конфигурации в структуру
@@ -58,71 +60,88 @@ func (r *Router) run(addr string) error {
 	return r.router.Run(addr)
 }
 
+func getMethodRegister(router *gin.Engine, method string) func(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+	switch method {
+	case "GET":
+		return router.GET
+	case "POST":
+		return router.POST
+	case "PATCH":
+		return router.PATCH
+	case "PUT":
+		return router.PUT
+	case "DELETE":
+		return router.DELETE
+	default:
+		return nil
+	}
+}
+
 func registerHandler(router *gin.Engine, route Route) {
 	// Получаем соответствующий обработчик функции по имени
 	handlerFunc := getHandlerByName(route.Handler)
-	switch route.Method {
-	case "GET":
-		if route.Access == "private" {
-			router.GET(route.Path, authorizeMiddleware, handlerFunc)
-		} else {
-			router.GET(route.Path, handlerFunc)
-		}
-	case "POST":
-		if route.Access == "private" {
-			router.POST(route.Path, authorizeMiddleware, handlerFunc)
-		} else {
-			router.POST(route.Path, handlerFunc)
-		}
-	default:
-		log.Printf("Неизвестный метод: %s", route.Method)
+	register := getMethodRegister(router, route.Method)
+	if route.Access == "private" {
+		register(route.Path, authorizeMiddleware, handlerFunc)
+	} else if route.Access == "public" {
+		register(route.Path, handlerFunc)
 	}
 }
 
 // TODO: выделить в интерфейс и сделать фабрику в зависимости от первого слова заголовка Authorization
 func authorizeMiddleware(ctx *gin.Context) {
 	log.Println("authorize Middleware is called")
-	authHeader := ctx.GetHeader("Authorization")
-	log.Printf("Header %s", authHeader)
+	// authHeader := ctx.GetHeader("Authorization")
+	// log.Printf("Header %s", authHeader)
+
+	authHeader, _ := ctx.Cookie("authToken")
 
 	if authHeader == "" {
-		ctx.String(401, "Требуется авторизация")
+		// ctx.String(401, "Требуется авторизация")
+		ctx.Redirect(302, "/login")
 		ctx.Abort()
 		return
 	}
-	// TODO: реализовать обработку ошибок на этапе авторизации
-	// TODO: Придумать как отправлять запрос на редирект на главную страницу
-	// TODO: Реализовать нормальный запрос с закодированными данными в заголовке на javascript
 
-	// Проверяем, что заголовок Authorization начинается с "Basic "
-	if strings.HasPrefix(authHeader, "Basic ") {
-		// Извлекаем токен из строки "Basic base64(username:password)"
-		token := strings.TrimPrefix(authHeader, "Basic ")
+	// TODO: написать фабрику парсеров и обработчиков на каждый тип авторизации
 
-		// Декодируем base64
-		decodedToken, err := base64.StdEncoding.DecodeString(token)
+	if strings.HasPrefix(authHeader, "Bearer ") {
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		// Валидация токена
+		validToken, err := internal.ValidateToken(token)
 		if err != nil {
+			log.Println(err.Error())
 			ctx.String(400, "Ошибка при декодировании токена")
 			ctx.Abort()
 			return
 		}
 
-		// Преобразуем в строку и разделяем имя пользователя и пароль
-		credentials := strings.SplitN(string(decodedToken), ":", 2)
-		if len(credentials) != 2 {
-			ctx.String(400, "Ошибка при извлечении имени пользователя и пароля")
+		jwtClaims, err := internal.GetJwtClaims(validToken)
+		if err != nil {
+			log.Println(err.Error())
+			ctx.String(400, "Ошибка при декодировании токена")
 			ctx.Abort()
 			return
 		}
 
-		email := credentials[0]
-		password := credentials[1]
-		log.Printf("email %s and password %s from headers\n", email, password)
-		//		if ok, _ := service.AuthorizeUser(service.ServiceUser{Name: "", Email: email, Password: password}); ok {
-		ctx.Next()
-		// } else {
-		// 	ctx.Abort()
-		// }
+		if internal.IsJWTExpired(jwtClaims) {
+			log.Println(err.Error())
+			ctx.String(400, "Срок дейсвтия токена авторизации истекло")
+			ctx.Abort()
+			return
+
+		}
+
+		log.Printf("email %s and password %s from headers\n", jwtClaims.Email, jwtClaims.Password)
+		if ok, _ := handler.UsersService.AuthenticateUser(service.AuthenticateUserRequest{
+			Email:    jwtClaims.Email,
+			Password: jwtClaims.Password,
+		}); ok {
+			ctx.Next()
+		} else {
+			ctx.Redirect(302, "/login")
+			ctx.Abort()
+		}
 
 	} else {
 		ctx.String(401, "Неподдерживаемая схема аутентификации")

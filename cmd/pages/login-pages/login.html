@@ -1,18 +1,4 @@
 <!DOCTYPE html>
-<!--
-Project: I-wish-you-app
-Created Date: Thursday, July 6th 2023, 7:31:32 pm
-Author: Olimpiev Y. Y.
------
-Last Modified:  yr.olimpiev@gmail.com
-Modified By: Olimpiev Y. Y.
------
-Copyright (c) 2023 NSU
-
------
--->
-
-<!DOCTYPE html>
 <html>
 <head>
   <title>Страница входа</title>
@@ -61,18 +47,138 @@ Copyright (c) 2023 NSU
       cursor: pointer;
       font-size: 16px;
     }
+
+    #loadingContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+}
+
+.loader {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -25px;
+    margin-left: -25px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
   </style>
 </head>
 <body>
+  <div id="loadingContainer">
+    <div class="loader"></div>
+  </div>
   <h2>Вход в приложение</h2>
-  <form action="/login" method="POST">
-    <label for="username">Логин:</label>
-    <input type="text" id="username" name="username" required><br>
+  <form id="loginForm">
+    <label for="email">Электронная почта:</label>
+    <input type="text" id="email" name="email" required><br>
 
     <label for="password">Пароль:</label>
     <input type="password" id="password" name="password" required><br>
 
     <input type="submit" value="Войти">
   </form>
+  
+
+  <script>
+           // Устанавливаем куки с временем жизни в 7 дней (параметр expires)
+        // и атрибутом SameSite=None (параметр samesite)
+        function setCookie(name, value, hoursToLive) {
+            const date = new Date();
+            date.setTime(date.getTime() + (hoursToLive  * 60 * 60 * 1000));
+
+            // Установка куки с параметрами
+            document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/; SameSite=None; Secure`;
+        }
+
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+      // Получаем данные формы
+      const formData = new FormData(event.target);
+
+      try {
+        // Отправляем POST-запрос на сервер для аутентификации
+        const response = await fetch("/login", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Произошла ошибка при выполнении POST-запроса");
+        }
+
+        const data = await response.json();
+        if (data.token) {
+          // Устанавливаем токен в заголовке Authorization
+          const token = data.token;
+          localStorage.setItem("IWYAuthToken", token);
+
+          // Устанавливаем сессионное куки с именем "authToken"
+          setCookie("authToken", "Bearer " + token, 1);
+          //          document.cookie = `authToken=Bearer ${token}; path=/;`;
+
+          const headers = new Headers();
+          headers.append('Authorization', `Bearer ${token}`);
+          
+          document.getElementById("loadingContainer").style.display = "block";
+          simulateLoading();
+
+          // Имитация загрузки с помощью таймера (может быть заменена на реальную загрузку страницы)
+          await new Promise(resolve => setTimeout(resolve, 3000)); // время загрузки в миллисекундах (здесь 3000 мс = 3 секунды)
+          
+          // Отправляем GET-запрос на главную страницу с установленным заголовком Authorization
+          const getResponse = await fetch("/", {
+            method: "GET",
+            headers: headers
+          });
+
+          if (!getResponse.ok) {
+            throw new Error("Произошла ошибка при выполнении GET-запроса");
+          }
+
+          // Обновляем страницу с данными, полученными в ответе на GET-запрос
+          const html = await getResponse.text();
+          // Изменяем адрес в строке браузера на "/"
+          window.history.pushState({ path: "/" }, "", "/");
+          // Обновляем страницу с данными, полученными в ответе на GET-запрос
+          document.documentElement.innerHTML = html;
+          
+          // Заканчиваем анимацию загрузки
+          document.getElementById("loadingContainer").style.display = "none";
+        } else {
+          // Если нет токена в ответе, выводим сообщение об ошибке или что-то еще
+          console.log(data);
+        }
+      } catch (error) {
+        console.error("Произошла ошибка:", error);
+      }
+    });
+
+    function simulateLoading() {
+      // Имитация загрузки с помощью таймера (может быть заменена на реальную загрузку страницы)
+      setTimeout(function() {
+          // Закончить анимацию загрузки и перенаправить пользователя
+          document.getElementById("loadingContainer").style.display = "none";
+      }, 3000); // время загрузки в миллисекундах (здесь 3000 мс = 3 секунды)
+    }
+  </script>
 </body>
 </html>

@@ -19,7 +19,7 @@
     },
     {
       "path": "/send-message",
-      "access": "public",
+      "access": "private",
       "method": "POST",
       "handler": "sendMessagePostHandler"
     },

@@ -1,5 +1,3 @@
-package repository
-
 // TODO: протестировать работу слоя репозитория
 
 /*
@@ -15,46 +13,26 @@ package repository
  * -----
  */
 
+package repository
+
 import (
 	"errors"
-	"log"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
 
-// TODO: replace const string to getenv
-func GetDBDSN() string {
-	return "postgres://postgres:password@localhost:5431/postgres?sslmode=disable"
+type UserRepository interface {
+	InsertUser(user RepositoryUser) error
+	GetUserByEmail(email string) (*RepositoryUser, error)
+	AuthenticateUser(email string, password string) (bool, error)
 }
-
-// TODO: описать интерфейс базы данных
-var DB *sqlx.DB
 
 type RepositoryUser struct {
-	ID       string `db:"id"`
-	Name     string `db:"name"`
-	Email    string `db:"email"`
-	Password string `db:"password"`
-}
-
-func InsertUser(repositoryUser RepositoryUser) error {
-	log.Printf("Insert user %v", repositoryUser)
-	// Открытие соединения с базой данных
-	db, err := sqlx.Connect("postgres", GetDBDSN())
-	if err != nil {
-		log.Fatalf("unable to connect to database: %v", err)
-	}
-	defer db.Close()
-
-	log.Printf("Exec query for insert user %v", repositoryUser)
-	_, err = db.Exec("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-		repositoryUser.Name,
-		repositoryUser.Email,
-		repositoryUser.Password)
-
-	return handleDBErrors(err)
+	ID        string `db:"id"`
+	Name      string `db:"name"`
+	Email     string `db:"email"`
+	Password  string `db:"password"`
+	Confirmed bool   `db:"confirmed"`
 }
 
 func handleDBErrors(err error) error {
@@ -67,25 +45,8 @@ func handleDBErrors(err error) error {
 			}
 		}
 
-		return errors.New("unknown error")
+		return errors.New(err.Error())
 	}
 
 	return nil
-}
-
-func GetUser(repositoryUser RepositoryUser) (RepositoryUser, error) {
-	log.Printf("Insert user %v", repositoryUser)
-	// Открытие соединения с базой данных
-	db, err := sqlx.Connect("postgres", GetDBDSN())
-	if err != nil {
-		log.Fatalf("unable to connect to database: %v", err)
-	}
-	defer db.Close()
-
-	log.Printf("Exec query for insert user %v", repositoryUser)
-	users := []RepositoryUser{}
-
-	err = db.Select(&users, "SELECT id, username, email FROM users WHERE (email=$1 AND password=$2)", repositoryUser.Email, repositoryUser.Password)
-	// TODO: добавить проверку ошибок noRows и MultiRows
-	return users[0], handleDBErrors(err)
 }

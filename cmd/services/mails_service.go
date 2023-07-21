@@ -24,7 +24,7 @@ import (
 	"github.com/ztrue/tracerr"
 )
 
-func SendConfirmMail(recipientEmail string) error {
+func SendConfirmMail(recipientEmail string, body string) error {
 	// Учетные данные для доступа к SMTP-серверу Gmail
 	email := os.Getenv("SMTP_EMAIL")
 	password := os.Getenv("SMTP_PASSWORD")
@@ -35,10 +35,6 @@ func SendConfirmMail(recipientEmail string) error {
 		return tracerr.Errorf("Cannot parse int from variable %s", "SMTP_PORT")
 	}
 
-	// Тело письма
-	// TODO: реализовать сообщение подтверждения с редиректом на уникальную страницу подтверждения
-	// для этой страницы, очевидно, понадобится обработчик
-	body := "Привет, спасибо за регистрацию!"
 	// Формирование аутентификационных данных
 	auth := smtp.PlainAuth("", email, password, smtpHost)
 

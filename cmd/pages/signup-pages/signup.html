@@ -156,11 +156,8 @@ Copyright (c) 2023 NSU
           return response.json();
         })
         .then(function(data) {
-          // Получение поля redirectURL из JSON-ответа
-          var redirectURL = data.redirectURL;
-
           // Перенаправление пользователя на указанный URL-адрес
-          window.location.href = redirectURL;
+          window.location.href = data.redirectURL;
         })
         .catch(function(error) {
           console.log('Ошибка при регистрации:', error);

@@ -14,13 +14,34 @@ package server
  */
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
+	repository "main/cmd/repositories"
+	"main/cmd/server/hash"
+	internal "main/cmd/server/internal"
 	service "main/cmd/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/jmoiron/sqlx/reflectx"
 )
+
+type Handler struct {
+	UsersService service.UsersService
+}
+
+var handler = Handler{
+	UsersService: &service.RealUsersService{
+		UsersRepo: &repository.SqlxUsersRepository{
+			DB: &sqlx.DB{
+				DB:     &sql.DB{},
+				Mapper: &reflectx.Mapper{},
+			},
+		},
+	},
+}
 
 var handlers = map[string]gin.HandlerFunc{
 	"rootPageGetHandler":      rootPageGetHandler,
@@ -72,11 +93,35 @@ func sendMessagePostHandler(ctx *gin.Context) {
 }
 
 func loginPostHandler(ctx *gin.Context) {
-	username := ctx.PostForm("username")
+	email := ctx.PostForm("email")
 	password := ctx.PostForm("password")
 
-	log.Printf("Handle post request for /login\n [username]: %s\t [password]: %s\n", username, password)
-	returnTargetPageOrNotFound("login-success", ctx)
+	ok, err := handler.UsersService.AuthenticateUser(service.AuthenticateUserRequest{
+		Email:    email,
+		Password: password,
+	})
+	if err != nil {
+		log.Println(err.Error())
+		// TODO: implement returnInternalError(ctx)
+		//		returnTargetPageOrNotFound("login-fail", ctx)
+		return
+	}
+
+	if !ok {
+		ctx.JSON(401, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	token, err := internal.GenerateToken(email, password)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": "Failed to generate token"})
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(200, LoginResponse{
+		Token: token,
+	})
 }
 
 type User struct {
@@ -87,6 +132,11 @@ type User struct {
 
 type RedirectPostResponse struct {
 	RedirectURL string `json:"redirectURL"`
+}
+
+type LoginResponse struct {
+	RedirectURL string `json:"redirectURL"`
+	Token       string `json:"token"`
 }
 
 func signupPostHandler(ctx *gin.Context) {
@@ -104,7 +154,8 @@ func signupPostHandler(ctx *gin.Context) {
 	}
 
 	log.Printf("Handle post request for /signup\n [username]: %s\t [email]: %s\t [password]: %s\n", user.Username, user.Email, user.Password)
-	if err := service.RegisterUser(service.NewUser(user.Username, user.Email, user.Password)); err != nil {
+
+	if err := handler.UsersService.RegisterUser(service.NewUser(user.Username, user.Email, hash.GetHash(user.Password))); err != nil {
 		log.Printf("%v", err)
 		response = RedirectPostResponse{
 			RedirectURL: "/signup-fatal",

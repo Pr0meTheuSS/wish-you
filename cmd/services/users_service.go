@@ -13,13 +13,18 @@ package service
  * -----
  */
 
-import (
-	"log"
-	repository "main/cmd/repositories"
-)
+type UsersService interface {
+	RegisterUser(user ServiceUser) error
+	AuthenticateUser(authRequest AuthenticateUserRequest) (bool, error)
+}
 
 type ServiceUser struct {
 	Name     string
+	Email    string
+	Password string
+}
+
+type AuthenticateUserRequest struct {
 	Email    string
 	Password string
 }
@@ -30,35 +35,4 @@ func NewUser(name string, email string, password string) ServiceUser {
 		Email:    email,
 		Password: password,
 	}
-}
-
-func RegisterUser(user ServiceUser) error {
-	if err := repository.InsertUser(repository.RepositoryUser{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
-	}); err != nil {
-		return err
-	}
-
-	if err := SendConfirmMail(user.Email); err != nil {
-		log.Printf("Ошибка отправки сообщения с подтверждением")
-		return err
-	}
-
-	return nil
-}
-
-func AuthorizeUser(user ServiceUser) (bool, error) {
-	_, err := repository.GetUser(repository.RepositoryUser{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
-	})
-
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
 }

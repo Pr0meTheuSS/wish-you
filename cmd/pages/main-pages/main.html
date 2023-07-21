@@ -134,14 +134,14 @@ Copyright (c) 2023 NSU
   <script>
 
     function showMessage(textContent) {
-    var messageContainer = document.getElementById('messageContainer');
-    var paragraphElement = document.getElementById('messageContainerParagraph');
-    paragraphElement.textContent = textContent; // Исправленное присвоение значения
-    console.log(paragraphElement.textContent);
-    messageContainer.style.display = "block";
-    setTimeout(function() {
-        messageContainer.style.display = "none";
-    }, 3000);
+      var messageContainer = document.getElementById('messageContainer');
+      var paragraphElement = document.getElementById('messageContainerParagraph');
+      paragraphElement.textContent = textContent; // Исправленное присвоение значения
+      console.log(paragraphElement.textContent);
+      messageContainer.style.display = "block";
+      setTimeout(function() {
+          messageContainer.style.display = "none";
+      }, 3000);
     }
 
     function sendMessage() {
@@ -179,5 +179,3 @@ Copyright (c) 2023 NSU
   </script>
 </body>
 </html>
-    
-
